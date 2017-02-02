@@ -10,7 +10,6 @@ def sim_distance(prefs,person1,person2):
   if len(si)==0: return 0
   sum_of_squares=sum([pow(prefs[person1][item]-prefs[person2][item],2) 
                       for item in prefs[person1] if item in prefs[person2]])
-
   return 1/(1+sum_of_squares)
 def sim_pearson(prefs,p1,p2):
   si={}
@@ -81,61 +80,8 @@ def getRecommendations(prefs,person,similarity=sim_pearson):
   rankings.reverse()
   return rankings
 
-def transformPrefs(prefs):
-  result={}
-  for person in prefs:
-    for item in prefs[person]:
-      result.setdefault(item,{})
-      
-      # Flip item and person
-      result[item][person]=prefs[person][item]
-  return result
 
-
-def calculateSimilarItems(prefs,n=10):
-  # Create a dictionary of items showing which other items they
-  # are most similar to.
-  result={}
-  # Invert the preference matrix to be item-centric
-  itemPrefs=transformPrefs(prefs)
-  c=0
-  for item in itemPrefs:
-    # Status updates for large datasets
-    c+=1
-    if c%100==0: print "%d / %d" % (c,len(itemPrefs))
-    # Find the most similar items to this one
-    scores=topMatches(itemPrefs,item,n=n,similarity=sim_distance)
-    result[item]=scores
-  return result
-
-def getRecommendedItems(prefs,itemMatch,user):
-  userRatings=prefs[user]
-  scores={}
-  totalSim={}
-  # Loop over items rated by this user
-  for (item,rating) in userRatings.items( ):
-
-    # Loop over items similar to this one
-    for (similarity,item2) in itemMatch[item]:
-
-      # Ignore if this user has already rated this item
-      if item2 in userRatings: continue
-      # Weighted sum of rating times similarity
-      scores.setdefault(item2,0)
-      scores[item2]+=similarity*rating
-      # Sum of all the similarities
-      totalSim.setdefault(item2,0)
-      totalSim[item2]+=similarity
-
-  # Divide each total score by total weighting to get an average
-  rankings=[(score/totalSim[item],item) for item,score in scores.items( )]
-
-  # Return the rankings from highest to lowest
-  rankings.sort( )
-  rankings.reverse( )
-  return rankings
-
-def loadMovieLens(path='../movielens',file='../u1.base'):
+def loadMovieLens(path='../movielens',file='/u1.base'):
   # Get movie titles
   movies={}
   for line in open(path+'/u.item'):
@@ -152,8 +98,9 @@ def loadMovieLens(path='../movielens',file='../u1.base'):
 
 if __name__=='__main__':
 	trainPrefs = loadMovieLens()
-	testPrefs = loadMovieLens(file='../u1.test')
+	testPrefs = loadMovieLens(file='/u1.test')
 	movies={}
+	total_acc=[]
 	for line in open('../movielens/u.item'):
 		(id,title)=line.split('|')[0:2]
 		movies[id]=title
@@ -169,12 +116,13 @@ if __name__=='__main__':
 			if not movie in preds:continue 
 			actualRating = testPrefs[user][movie]
 			predcitedRating = preds[movie]
-			diff = fabs(fabs(predcitedRating) - fabs(actualRating))
+			diff = fabs(predcitedRating - actualRating)
 			# print predcitedRating,actualRating,diff
-			accu = float(diff)/actualRating
-			if accu > 1:
-				continue
+			accu = float(diff)/5.0
+			# if accu > 1:
+			# 	continue
 			accuracies.append(1 - accu)
+			total_acc.append(1 - accu)
 		print (sum(accuracies)/len(accuracies))*100
 
-		
+	print "Average Accuracy:%f" %((sum(total_acc)/len(total_acc))*100)		

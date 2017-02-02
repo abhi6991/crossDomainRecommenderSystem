@@ -9,7 +9,7 @@ if __name__=='__main__':
 
 	t = [row for row in data]
 
-	fDomainDict,sDomainDict={},{}
+	fDomainDict,sDoma08k inDict={},{}
 	fDomainDict=loadMovieLens('../movielens','/u1.base')
 	sDomainDict=loadMovieLens('../movielens','/u2.base')
 	fDomainTest =loadMovieLens('../movielens','/u1.test')
@@ -28,9 +28,7 @@ if __name__=='__main__':
 			if not movie in preds:continue 
 			actualRating = fDomainTest[user][movie]
 			predcitedRating = preds[movie]
-			accu = fabs((predcitedRating - actualRating)/actualRating)
-			if accu > 1:
-				continue
+			accu = fabs((predcitedRating - actualRating)/5.0)
 			accuracies.append(1 - accu)
 		lenCount+=1
 		print (sum(accuracies)/len(accuracies))*100
