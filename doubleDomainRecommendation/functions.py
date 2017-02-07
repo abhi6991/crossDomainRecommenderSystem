@@ -50,11 +50,15 @@ def topMatches(prefs,person,n=5,similarity=sim_pearson):
 
 # Gets recommendations for a person by using a weighted average
 # of every other user's rankings
-def getRecommendations(domain1,domain2,person,similarity=sim_pearson):
+def getRecommendations(domain1,domain2,person,no,similarity=sim_pearson):
   totals={}
   simSums={}
+  count=0
   for other in domain2:
     # don't compare me to myself
+    if count>no:
+      break
+    count+=1
     if other==person: continue
     sim=similarity(domain2,person,other)
 
